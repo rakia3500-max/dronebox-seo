@@ -28,7 +28,13 @@ exports.handler = async function (event) {
   const timestamp = Date.now().toString();
   const signature = makeSignature(timestamp, "GET", "/keywordstool", SECRET_KEY);
 
-  const url = `https://api.searchad.naver.com/keywordstool?hintKeywords=${encodeURIComponent(keyword)}&showDetail=1`;
+  const params = new URLSearchParams({
+    hintKeywords: keyword,
+    showDetail: "1",
+    includeHintKeywords: "1"
+  });
+
+  const url = `https://api.searchad.naver.com/keywordstool?${params.toString()}`;
 
   try {
     const response = await fetch(url, {
@@ -40,12 +46,13 @@ exports.handler = async function (event) {
       },
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const errText = await response.text();
-      return { statusCode: response.status, headers, body: JSON.stringify({ error: errText }) };
+      return { statusCode: response.status, headers, body: JSON.stringify({ error: responseText }) };
     }
 
-    const data = await response.json();
+    const data = JSON.parse(responseText);
     const keywords = (data.keywordList || []).map((k) => {
       const pc = k.monthlyPcQcCnt === "< 10" ? 5 : Number(k.monthlyPcQcCnt) || 0;
       const mobile = k.monthlyMobileQcCnt === "< 10" ? 5 : Number(k.monthlyMobileQcCnt) || 0;
