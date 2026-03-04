@@ -28,13 +28,10 @@ exports.handler = async function (event) {
   const timestamp = Date.now().toString();
   const signature = makeSignature(timestamp, "GET", "/keywordstool", SECRET_KEY);
 
-  const params = new URLSearchParams({
-    hintKeywords: keyword,
-    showDetail: "1",
-    includeHintKeywords: "1"
-  });
+  // 네이버 API는 띄어쓰기 불가 → 언더스코어로 대체 후 전송, 결과에서 복원
+  const cleanKeyword = keyword.trim().replace(/\s+/g, "_");
 
-  const url = `https://api.searchad.naver.com/keywordstool?${params.toString()}`;
+  const url = `https://api.searchad.naver.com/keywordstool?hintKeywords=${encodeURIComponent(cleanKeyword)}&showDetail=1&includeHintKeywords=1`;
 
   try {
     const response = await fetch(url, {
