@@ -1,0 +1,8 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/keyword"
+  to = "/.netlify/functions/keyword"
+  status = 200
