@@ -28,10 +28,14 @@ exports.handler = async function (event) {
   const timestamp = Date.now().toString();
   const signature = makeSignature(timestamp, "GET", "/keywordstool", SECRET_KEY);
 
-  // 네이버 API는 띄어쓰기 불가 → 언더스코어로 대체 후 전송, 결과에서 복원
-  const cleanKeyword = keyword.trim().replace(/\s+/g, "_");
+  // 띄어쓰기 그대로 유지 (네이버 API가 실제로 띄어쓰기 지원함)
+  const cleanKeyword = keyword.trim();
 
-  const url = `https://api.searchad.naver.com/keywordstool?hintKeywords=${encodeURIComponent(cleanKeyword)}&showDetail=1&includeHintKeywords=1`;
+  const params = new URLSearchParams();
+  params.append("hintKeywords", cleanKeyword);
+  params.append("showDetail", "1");
+
+  const url = `https://api.searchad.naver.com/keywordstool?${params.toString()}`;
 
   try {
     const response = await fetch(url, {
@@ -44,6 +48,8 @@ exports.handler = async function (event) {
     });
 
     const responseText = await response.text();
+    console.log("Naver API status:", response.status);
+    console.log("Naver API response:", responseText.slice(0, 300));
 
     if (!response.ok) {
       return { statusCode: response.status, headers, body: JSON.stringify({ error: responseText }) };
@@ -64,6 +70,7 @@ exports.handler = async function (event) {
 
     return { statusCode: 200, headers, body: JSON.stringify({ keywords }) };
   } catch (err) {
+    console.error("Error:", err.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
