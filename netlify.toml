@@ -6,3 +6,8 @@
   from = "/api/keyword"
   to = "/.netlify/functions/keyword"
   status = 200
+
+[[redirects]]
+  from = "/api/seo"
+  to = "/.netlify/functions/seo"
+  status = 200
