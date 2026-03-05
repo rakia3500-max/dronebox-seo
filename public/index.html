@@ -334,34 +334,14 @@ async function generateSEO() {
   btn.disabled = true;
   btn.textContent = '⏳ AI 생성 중...';
 
-  const top10 = [...currentData].sort((a, b) => b.totalMonthly - a.totalMonthly).slice(0, 10);
-  const kwSummary = top10.map(k => `${k.keyword}(월${k.totalMonthly.toLocaleString()}회)`).join(', ');
-
-  const prompt = `당신은 네이버 쇼핑 SEO 전문가입니다. 드론 쇼핑몰 "드론박스"의 "${currentKeyword}" 관련 제품의 SEO 설정을 생성해주세요.
-
-실제 네이버 검색량 상위 키워드: ${kwSummary}
-
-위 검색량 데이터를 반영하여 아래 JSON 형식으로만 응답하세요 (순수 JSON, 마크다운 없이):
-{"title":"60자이내 타이틀(검색량 높은 키워드 앞배치, 드론박스 포함)","description":"160자이내 메타설명(구매유도+핵심스펙)","keywords":"콤마구분 키워드 15개(검색량 높은 순)","naverTags":"파이프구분 10개 태그","attributes":"^구분 속성정보 500자이하"}`;
-
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/seo', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': 'ignored',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword: currentKeyword, keywordData: currentData })
     });
-    const data = await res.json();
-    let text = data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
-    const seo = JSON.parse(text);
+    const seo = await res.json();
+    if (seo.error) throw new Error(seo.error);
     renderSEO(seo);
     showToast('✅ SEO 문구 생성 완료!');
   } catch {
