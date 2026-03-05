@@ -25,22 +25,21 @@ exports.handler = async function (event) {
 위 검색량 데이터를 반영하여 아래 JSON 형식으로만 응답하세요 (순수 JSON, 마크다운 없이):
 {"title":"60자이내 타이틀(검색량 높은 키워드 앞배치, 드론박스 포함)","description":"160자이내 메타설명(구매유도+핵심스펙)","keywords":"콤마구분 키워드 15개(검색량 높은 순)","naverTags":"파이프구분 10개 태그","attributes":"^구분 속성정보 500자이하"}`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
-        messages: [{ role: "user", content: prompt }],
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
       }),
     });
 
     const data = await response.json();
-    let text = data.content.map(i => i.text || "").join("").replace(/```json|```/g, "").trim();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    text = text.replace(/```json|```/g, "").trim();
     const seo = JSON.parse(text);
 
     return { statusCode: 200, headers, body: JSON.stringify(seo) };
