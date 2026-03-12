@@ -26,7 +26,7 @@ exports.handler = async function (event) {
 {"title":"60자이내 타이틀(검색량 높은 키워드 앞배치, 드론박스 포함)","description":"160자이내 메타설명(구매유도+핵심스펙)","keywords":"콤마구분 키워드 15개(검색량 높은 순)","naverTags":"파이프구분 10개 태그","attributes":"속성정보 500자이하"}`;
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
       method: "POST",
